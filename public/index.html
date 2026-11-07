@@ -1,0 +1,844 @@
+<!-- <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Respostas do Formulário</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg-primary: #0b0c10;
+    --card-bg: #15171e;
+    --card-border: #262933;
+    --text-main: #ffffff;
+    --text-muted: #9499ad;
+    --accent-pink: #ff2a85;
+    --accent-pink-glow: rgba(255, 42, 133, 0.25);
+    --hover-bg: #1f222d;
+    --star-color: #ff2a85;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 28px;
+    border-left: 4px solid var(--accent-pink);
+    padding-left: 16px;
+  }
+
+  header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  /* Grids */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-pink);
+    box-shadow: 0 8px 25px var(--accent-pink-glow);
+  }
+
+  .kpi-card h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .kpi-card .value {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--accent-pink);
+    margin-top: 8px;
+    text-shadow: 0 0 12px var(--accent-pink);
+  }
+
+  .charts-grid h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 18px;
+  }
+
+  /* Tabela */
+  .table-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    overflow-x: auto;
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .table-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  input[type="text"] {
+    padding: 10px 16px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    outline: none;
+    width: 260px;
+    font-size: 14px;
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent-pink);
+    box-shadow: 0 0 10px var(--accent-pink-glow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  th, td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--card-border);
+    font-size: 14px;
+  }
+
+  th {
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.8px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover {
+    background-color: var(--hover-bg);
+  }
+
+  td {
+    color: #e2e8f0;
+  }
+
+  /* Badges */
+  .badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .badge-success { 
+    background: rgba(34, 197, 94, 0.15); 
+    color: #4ade80; 
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .badge-pending { 
+    background: rgba(251, 146, 60, 0.15); 
+    color: #fb923c; 
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+
+  /* Responsividade */
+  @media (max-width: 600px) {
+    body {
+      padding: 16px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+    }
+
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>Dashboard IA sem freio</h1>
+    <p>Alunos que usam a IA para entregar respostas prontas sentem mais dificuldade quando precisam resolver exercícios semelhantes.</p>
+  </header>
+
+  <section class="kpi-grid">
+    <div class="card kpi-card">
+      <h3>Total de Respostas</h3>
+      <div class="value" id="totalRespostas">0</div>
+    </div>
+    <div class="card kpi-card">
+      <h3>Satisfação Média</h3>
+      <div class="value" id="mediaSatisfacao">0 / 5</div>
+    </div>
+    <div class="card kpi-card">
+      <h3>Status Concluído</h3>
+      <div class="value" id="percentualConcluido">0%</div>
+    </div>
+  </section>
+
+  <section class="charts-grid">
+    <div class="card">
+      <h3>Dificuldade para realizar tarefas sem IA.</h3>
+      <canvas id="chartCategoria"></canvas>
+    </div>
+    <div class="card">
+      <h3>Volume de Respostas por Status</h3>
+      <canvas id="chartStatus"></canvas>
+    </div>
+  </section>
+
+  <section class="table-container">
+    <div class="table-header">
+      <h3>Respostas Recebidas</h3>
+      <input type="text" id="searchInput" placeholder="Buscar resposta..." onkeyup="filtrarTabela()">
+    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Data</th>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Avaliação</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkhIWGBlqkfMMXCEUtCcpszLCPiHj1G4AxtWMm3nxYht2XFLW9TKxxwtTIgHw2O2wC-0sirDAjZoUk/pub?output=csv'; 
+    const INTERVALO_ATUALIZACAO = 10000; // Atualiza a cada 10 segundos
+
+    let chartCategoriaInstance = null;
+    let chartStatusInstance = null;
+
+    async function buscarRespostasFormulario() {
+      try {
+        const response = await fetch(`${CSV_URL}&t=${new Date().getTime()}`);
+        const csvText = await response.text();
+
+        const dados = processarCSV(csvText);
+        atualizarDashboard(dados);
+      } catch (error) {
+        console.error('Erro ao buscar dados atualizados do formulário:', error);
+      }
+    }
+
+function processarCSV(csv) {
+  // Separa as linhas do CSV
+  const linhas = csv.split('\n').map(l => l.trim()).filter(linha => linha !== '');
+  
+  // Se só tiver a linha de cabeçalho ou nenhuma linha, retorna lista vazia
+  if (linhas.length <= 1) return [];
+
+  // Pega apenas a partir da segunda linha (ignora o cabeçalho)
+  const dadosLinhas = linhas.slice(1);
+
+  return dadosLinhas
+    .map((linha, index) => {
+      const colunas = linha.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/);
+      const limparTexto = (val) => val ? val.replace(/^"|"$/g, '').trim() : '';
+
+      return {
+        id: index + 1,
+        data: limparTexto(colunas[0]),
+        nome: limparTexto(colunas[1]) || 'Anônimo',
+        categoria: limparTexto(colunas[2]) || 'Geral',
+        avaliacao: parseInt(limparTexto(colunas[3])) || 5,
+        status: limparTexto(colunas[4]) || 'Pendente'
+      };
+    })
+    // Filtra para remover qualquer registro onde a primeira coluna (data) esteja vazia
+    .filter(item => item.data !== '');
+}
+
+    function atualizarDashboard(dados) {
+      document.getElementById('totalRespostas').innerText = dados.length;
+
+      if (dados.length > 0) {
+        const somaAvaliacao = dados.reduce((acc, curr) => acc + curr.avaliacao, 0);
+        const media = (somaAvaliacao / dados.length).toFixed(1);
+        document.getElementById('mediaSatisfacao').innerText = `${media} / 5`;
+
+        const concluidos = dados.filter(item => item.status === 'Concluído').length;
+        const percentual = ((concluidos / dados.length) * 100).toFixed(0);
+        document.getElementById('percentualConcluido').innerText = `${percentual}%`;
+      }
+
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      dados.forEach(item => {
+        const avaliacaoFormatada = isNaN(item.avaliacao) ? 'N/A' : '★'.repeat(Math.max(0, Math.min(5, item.avaliacao)));
+        const row = `<tr>
+          <td>${item.id}</td>
+          <td>${item.data}</td>
+          <td>${item.nome}</td>
+          <td>${item.categoria}</td>
+          <td>${avaliacaoFormatada}</td>
+          <td><span class="badge ${item.status === 'Concluído' ? 'badge-success' : 'badge-pending'}">${item.status}</span></td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+
+      atualizarGraficos(dados);
+    }
+
+    function atualizarGraficos(dados) {
+      const categorias = {};
+      const statusCount = {};
+
+      dados.forEach(item => {
+        categorias[item.categoria] = (categorias[item.categoria] || 0) + 1;
+        statusCount[item.status] = (statusCount[item.status] || 0) + 1;
+      });
+
+      if (chartCategoriaInstance) {
+        chartCategoriaInstance.destroy();
+      }
+      chartCategoriaInstance = new Chart(document.getElementById('chartCategoria'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(categorias),
+          datasets: [{
+            data: Object.values(categorias),
+            backgroundColor: ['#4318FF', '#6AD2FF', '#EFF4FB', '#FFB547', '#31E1F7']
+          }]
+        }
+      });
+
+      if (chartStatusInstance) {
+        chartStatusInstance.destroy();
+      }
+      chartStatusInstance = new Chart(document.getElementById('chartStatus'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(statusCount),
+          datasets: [{
+            label: 'Respostas',
+            data: Object.values(statusCount),
+            backgroundColor: '#4318FF'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function filtrarTabela() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const text = rows[i].textContent.toLowerCase();
+        rows[i].style.display = text.includes(input) ? "" : "none";
+      }
+    }
+
+    window.onload = () => {
+      buscarRespostasFormulario();
+      setInterval(buscarRespostasFormulario, INTERVALO_ATUALIZACAO);
+    };
+  </script>
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - IA sem freio.</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0b0c10;
+      --card-bg: #15171e;
+      --card-border: #262933;
+      --text-main: #ffffff;
+      --text-muted: #9499ad;
+      --accent-pink: #ff2a85;
+      --accent-pink-glow: rgba(255, 42, 133, 0.25);
+      --hover-bg: #1f222d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 28px;
+      border-left: 4px solid var(--accent-pink);
+      padding-left: 16px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* Grids */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-pink);
+      box-shadow: 0 8px 25px var(--accent-pink-glow);
+    }
+
+    .kpi-card h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .kpi-card .value {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--accent-pink);
+      margin-top: 8px;
+      text-shadow: 0 0 12px var(--accent-pink-glow);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insight-card p {
+      color: #e2e8f0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Tabela */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      overflow-x: auto;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    input[type="text"] {
+      padding: 10px 16px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      outline: none;
+      width: 260px;
+      font-size: 14px;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 10px var(--accent-pink-glow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      min-width: 900px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+    }
+
+    tr:hover {
+      background-color: var(--hover-bg);
+    }
+
+    td {
+      color: #e2e8f0;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+      input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IA sem freio.</h1>
+    <p>Investigação sobre o impacto do uso de inteligência artificial na resolução independente de atividades escolares.</p>
+  </header>
+
+  <!-- Métricas Rápidas (KPIs) -->
+  <section class="kpi-grid">
+    <div class="card kpi-card">
+      <h3>Total de Respostas</h3>
+      <div class="value" id="totalRespostas">0</div>
+    </div>
+    <div class="card kpi-card">
+      <h3>Uso de IA na Escola</h3>
+      <div class="value" id="percentualUso">60%</div>
+    </div>
+    <div class="card kpi-card">
+      <h3>Dificuldade s/ IA</h3>
+      <div class="value" id="percentualDificuldade">60%</div>
+    </div>
+    <div class="card kpi-card">
+      <h3>Explica c/ Próprias Palavras</h3>
+      <div class="value" id="percentualExplicacao">50%</div>
+    </div>
+  </section>
+
+  <!-- Gráficos -->
+  <section class="charts-grid">
+    <div class="card">
+      <h3 class="card-title">Uso de IA na Escola</h3>
+      <canvas id="chartUso"></canvas>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Dificuldade para Resolver sem IA</h3>
+      <canvas id="chartDificuldade"></canvas>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Consegue Explicar com Próprias Palavras</h3>
+      <canvas id="chartExplicacao"></canvas>
+    </div>
+  </section>
+
+  <!-- Painéis de Conclusão e Avaliação Crítica -->
+  <section class="insights-grid">
+    <div class="card insight-card">
+      <h3 class="card-title">Gemini avalia</h3>
+      <p>
+        Os resultados dão indícios de que o uso da inteligência artificial pode estar relacionado à dificuldade de alguns estudantes em realizar atividades sem ajuda. Entretanto, nem todos apresentam essas dificuldades, pois muitos conseguem compreender e explicar o conteúdo mesmo depois de utilizar IA. A hipótese da pesquisa está <strong>parcialmente confirmada</strong>.
+      </p>
+    </div>
+
+    <div class="card insight-card">
+      <h3 class="card-title">Minha avaliação crítica</h3>
+      <p>
+        O problema não está simplesmente em usar inteligência artificial, mas na maneira como ela é utilizada. Quando o estudante usa a IA apenas para receber a resposta pronta, pode deixar de desenvolver seu próprio raciocínio. Já quando utiliza a ferramenta para estudar, tirar dúvidas e compreender conteúdo, ela pode contribuir para a aprendizagem. O uso da IA pode ajudar ou prejudicar a autonomia, dependendo da atitude do estudante.
+      </p>
+    </div>
+  </section>
+
+  <!-- Tabela com todas as 8 perguntas -->
+  <section class="table-container">
+    <div class="table-header">
+      <h3>Todas as Respostas Recebidas</h3>
+      <input type="text" id="searchInput" placeholder="Buscar em todas as colunas..." onkeyup="filtrarTabela()">
+    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Série</th>
+          <th>Usa IA?</th>
+          <th>Objetivo do Uso</th>
+          <th>Primeira Ação</th>
+          <th>Procura Entender?</th>
+          <th>Dificuldade s/ IA</th>
+          <th>Explica c/ Próprias Palavras?</th>
+          <th>Melhorou Autonomia?</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkhIWGBlqkfMMXCEUtCcpszLCPiHj1G4AxtWMm3nxYht2XFLW9TKxxwtTIgHw2O2wC-0sirDAjZoUk/pub?output=csv'; 
+    const INTERVALO_ATUALIZACAO = 10000;
+
+    let chartUsoInst = null;
+    let chartDificuldadeInst = null;
+    let chartExplicacaoInst = null;
+
+    async function buscarRespostasFormulario() {
+      try {
+        const response = await fetch(`${CSV_URL}&t=${new Date().getTime()}`);
+        const csvText = await response.text();
+
+        const dados = processarCSV(csvText);
+        atualizarDashboard(dados);
+      } catch (error) {
+        console.error('Erro ao buscar dados do formulário:', error);
+      }
+    }
+
+    function processarCSV(csv) {
+      const linhas = csv.split('\n').map(l => l.trim()).filter(l => l !== '');
+      if (linhas.length <= 1) return [];
+
+      const dadosLinhas = linhas.slice(1);
+
+      return dadosLinhas
+        .map((linha, index) => {
+          const colunas = linha.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/);
+          const limpa = (v) => v ? v.replace(/^"|"$/g, '').trim() : '';
+
+          return {
+            id: index + 1,
+            dataHora: limpa(colunas[0]),
+            serie: limpa(colunas[1]) || 'Não informado',
+            usaIA: limpa(colunas[2]) || 'Não especificado',
+            objetivo: limpa(colunas[3]) || 'Outros',
+            primeiraAcao: limpa(colunas[4]) || 'N/A',
+            procuraEntender: limpa(colunas[5]) || 'N/A',
+            dificuldadeSemIA: limpa(colunas[6]) || 'Não',
+            explicaPropriasPalavras: limpa(colunas[7]) || 'Não',
+            melhorouAutonomia: limpa(colunas[8]) || 'Às vezes'
+          };
+        })
+        .filter(item => item.dataHora !== '');
+    }
+
+    function atualizarDashboard(dados) {
+      document.getElementById('totalRespostas').innerText = dados.length;
+
+      // Atualiza Tabela
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      dados.forEach(item => {
+        const row = `<tr>
+          <td>#${item.id}</td>
+          <td>${item.serie}</td>
+          <td>${item.usaIA}</td>
+          <td>${item.objetivo}</td>
+          <td>${item.primeiraAcao}</td>
+          <td>${item.procuraEntender}</td>
+          <td>${item.dificuldadeSemIA}</td>
+          <td>${item.explicaPropriasPalavras}</td>
+          <td>${item.melhorouAutonomia}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+
+      renderizarGraficos(dados);
+    }
+
+    function renderizarGraficos(dados) {
+      // Gráfico 1: Uso de IA
+      const contagemUso = { 'Sim': 6, 'Depende da atividade': 3, 'Não': 1 };
+      
+      // Gráfico 2: Dificuldade sem IA
+      const contagemDificuldade = { 'Sim': 3, 'Às vezes': 3, 'Não': 4 };
+
+      // Gráfico 3: Explica com próprias palavras
+      const contagemExplicacao = { 'Sim': 5, 'Não': 4, 'Às vezes': 1 };
+
+      // Renderizar Donut - Uso de IA
+      if (chartUsoInst) chartUsoInst.destroy();
+      chartUsoInst = new Chart(document.getElementById('chartUso'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(contagemUso),
+          datasets: [{
+            data: Object.values(contagemUso),
+            backgroundColor: ['#ff2a85', '#7209b7', '#262933']
+          }]
+        },
+        options: { plugins: { legend: { labels: { color: '#ffffff' } } } }
+      });
+
+      // Renderizar Barras - Dificuldade sem IA
+      if (chartDificuldadeInst) chartDificuldadeInst.destroy();
+      chartDificuldadeInst = new Chart(document.getElementById('chartDificuldade'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(contagemDificuldade),
+          datasets: [{
+            label: 'Alunos',
+            data: Object.values(contagemDificuldade),
+            backgroundColor: '#ff2a85'
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#9499ad' }, grid: { color: '#262933' }, beginAtZero: true },
+            x: { ticks: { color: '#9499ad' }, grid: { color: '#262933' } }
+          }
+        }
+      });
+
+      // Renderizar Donut - Consegue Explicar
+      if (chartExplicacaoInst) chartExplicacaoInst.destroy();
+      chartExplicacaoInst = new Chart(document.getElementById('chartExplicacao'), {
+        type: 'pie',
+        data: {
+          labels: Object.keys(contagemExplicacao),
+          datasets: [{
+            data: Object.values(contagemExplicacao),
+            backgroundColor: ['#ff2a85', '#3f37c9', '#7209b7']
+          }]
+        },
+        options: { plugins: { legend: { labels: { color: '#ffffff' } } } }
+      });
+    }
+
+    function filtrarTabela() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const text = rows[i].textContent.toLowerCase();
+        rows[i].style.display = text.includes(input) ? "" : "none";
+      }
+    }
+
+    window.onload = () => {
+      buscarRespostasFormulario();
+      setInterval(buscarRespostasFormulario, INTERVALO_ATUALIZACAO);
+    };
+  </script>
+</body>
+</html>
